@@ -1,0 +1,13 @@
+{
+  "name": "ambient",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter web dev"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
