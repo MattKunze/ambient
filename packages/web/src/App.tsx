@@ -1,35 +1,36 @@
-import { APITester } from "./APITester";
+import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import "./index.css";
-
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+import { useSystemTheme } from "./useSystemTheme";
 
 export function App() {
+  const { theme, toggleTheme } = useSystemTheme();
+
   return (
-    <div className="max-w-7xl mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-24 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-24 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] animate-[spin_20s_linear_infinite]"
-        />
+    <>
+      <div className="navbar bg-base-100">
+        <div className="flex-1">
+          <a href="/" className="btn btn-ghost text-xl">
+            Ambient
+          </a>
+        </div>
+        <div className="flex-none">
+          <label className="swap swap-rotate">
+            <input
+              type="checkbox"
+              checked={theme === "synthwave"}
+              onChange={toggleTheme}
+            />
+            <SunIcon className="swap-off h-6 w-6" />
+            <MoonIcon className="swap-on h-6 w-6" />
+          </label>
+        </div>
       </div>
 
-      <h1 className="text-5xl font-bold my-4 leading-tight">Bun + React</h1>
-      <p>
-        Edit{" "}
-        <code className="bg-[#1a1a1a] px-2 py-1 rounded font-mono">
-          src/App.tsx
-        </code>{" "}
-        and save to test HMR
-      </p>
-      <APITester />
-    </div>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold">Welcome to Ambient</h1>
+        <p className="mt-4">Your content goes here.</p>
+      </div>
+    </>
   );
 }
 
