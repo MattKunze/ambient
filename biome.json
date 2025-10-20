@@ -16,11 +16,18 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noStaticElementInteractions": "off"
+      },
       "style": {
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noArrayIndexKey": "off"
+      },
+      "correctness": {
+        "noUnknownProperty": "off"
       }
     }
   },

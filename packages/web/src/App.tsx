@@ -1,5 +1,6 @@
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import "./index.css";
+import { SpriteEditor } from "./SpriteEditor";
 import { useSystemTheme } from "./useSystemTheme";
 
 export function App() {
@@ -27,8 +28,8 @@ export function App() {
       </div>
 
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold">Welcome to Ambient</h1>
-        <p className="mt-4">Your content goes here.</p>
+        <h1 className="text-3xl font-bold mb-4">Sprite Editor</h1>
+        <SpriteEditor height={11} width={53}/>
       </div>
     </>
   );
