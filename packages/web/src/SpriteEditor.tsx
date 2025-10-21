@@ -1,4 +1,8 @@
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  PaperAirplaneIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 
@@ -24,6 +28,10 @@ export function SpriteEditor({
   const [selectedTool, setSelectedTool] = useState<Tool>("pencil");
   const [selectedColor, setSelectedColor] = useState("bg-sky-500");
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sendStatus, setSendStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
 
   // Initialize grid with empty cells
   const [grid, setGrid] = useState<Cell[][]>(() =>
@@ -71,6 +79,41 @@ export function SpriteEditor({
       window.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, []);
+
+  // Reset status after 3 seconds
+  useEffect(() => {
+    if (sendStatus !== "idle") {
+      const timer = setTimeout(() => setSendStatus("idle"), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [sendStatus]);
+
+  const sendToDisplay = async () => {
+    setIsSending(true);
+    setSendStatus("idle");
+
+    try {
+      const response = await fetch("/api/sprite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ width, height, grid }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSendStatus("success");
+      } else {
+        console.error("Failed to send sprite:", result.error);
+        setSendStatus("error");
+      }
+    } catch (error) {
+      console.error("Error sending sprite:", error);
+      setSendStatus("error");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const colors = [
     "bg-slate-500",
@@ -123,6 +166,33 @@ export function SpriteEditor({
           >
             <TrashIcon className="h-5 w-5" />
           </button>
+          <button
+            type="button"
+            className={clsx("btn join-item gap-2", {
+              "btn-primary": sendStatus === "idle",
+              "btn-success": sendStatus === "success",
+              "btn-error": sendStatus === "error",
+            })}
+            onClick={sendToDisplay}
+            disabled={isSending}
+            title="Send to Display"
+          >
+            {isSending ? (
+              <>
+                <span className="loading loading-spinner loading-sm" />
+                Sending...
+              </>
+            ) : sendStatus === "success" ? (
+              <>✓ Sent!</>
+            ) : sendStatus === "error" ? (
+              <>✗ Failed</>
+            ) : (
+              <>
+                <PaperAirplaneIcon className="h-5 w-5" />
+                Send
+              </>
+            )}
+          </button>
         </div>
 
         {/* Color Palette */}
@@ -165,6 +235,16 @@ export function SpriteEditor({
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="hidden">
+        <div className="h-1px w-1px gap-[1px]" />
+        <div className="h-2px w-2px gap-[2px]" />
+        <div className="h-1 w-1 gap-1" />
+        <div className="h-2 w-2 gap-2" />
+        <div className="h-3 w-3 gap-3" />
+        <div className="h-4 w-4 gap-4" />
+        <div className="h-5 w-5 gap-5" />
       </div>
     </div>
   );

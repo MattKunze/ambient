@@ -29,7 +29,7 @@ export function App() {
 
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold mb-4">Sprite Editor</h1>
-        <SpriteEditor height={11} width={53}/>
+        <SpriteEditor height={11} width={53} cellSize="3" gap="[2px]" />
       </div>
     </>
   );

@@ -9,6 +9,7 @@ in
     # pkgs-unstable.bun
     pkgs.just
     pkgs.mqttui
+    pkgs.ncftp
   ];
 
   languages.javascript = {
