@@ -1,16 +1,19 @@
 import {
+  BackspaceIcon,
+  ChartBarIcon,
+  CheckIcon,
+  ChevronDownIcon,
   PaperAirplaneIcon,
-  PencilIcon,
-  TrashIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 
+import { Palettes, type PaletteName } from "./palettes";
+
 type Cell = {
   color: string;
 };
-
-type Tool = "pencil" | "eraser";
 
 interface SpriteEditorProps {
   width: number;
@@ -25,13 +28,16 @@ export function SpriteEditor({
   cellSize = "4",
   gap = "1",
 }: SpriteEditorProps) {
-  const [selectedTool, setSelectedTool] = useState<Tool>("pencil");
+  const [selectedPalette, setSelectedPalette] =
+    useState<PaletteName>("default");
   const [selectedColor, setSelectedColor] = useState("bg-sky-500");
   const [isDrawing, setIsDrawing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [sendStatus, setSendStatus] = useState<"idle" | "success" | "error">(
     "idle",
   );
+
+  const currentPalette = Palettes[selectedPalette];
 
   // Initialize grid with empty cells
   const [grid, setGrid] = useState<Cell[][]>(() =>
@@ -45,11 +51,7 @@ export function SpriteEditor({
     const rowData = newGrid[row];
     if (!rowData) return;
 
-    if (selectedTool === "eraser") {
-      rowData[col] = { color: "bg-base-300" };
-    } else {
-      rowData[col] = { color: selectedColor };
-    }
+    rowData[col] = { color: selectedColor };
     setGrid(newGrid);
   };
 
@@ -88,6 +90,23 @@ export function SpriteEditor({
     }
   }, [sendStatus]);
 
+  const clearSprite = () => {
+    const newGrid = Array.from({ length: height }, () =>
+      Array.from({ length: width }, () => ({ color: "bg-base-300" })),
+    );
+    setGrid(newGrid);
+  };
+
+  const fillWithGradient = () => {
+    const newGrid = Array.from({ length: height }, (_, rowIndex) => {
+      const color = currentPalette[rowIndex % currentPalette.length];
+      return Array.from({ length: width }, () => ({
+        color: color || "bg-base-300",
+      }));
+    });
+    setGrid(newGrid);
+  };
+
   const sendToDisplay = async () => {
     setIsSending(true);
     setSendStatus("idle");
@@ -115,60 +134,31 @@ export function SpriteEditor({
     }
   };
 
-  const colors = [
-    "bg-slate-500",
-    "bg-gray-500",
-    "bg-zinc-500",
-    "bg-neutral-500",
-    "bg-stone-500",
-    "bg-red-500",
-    "bg-orange-500",
-    "bg-amber-500",
-    "bg-yellow-500",
-    "bg-lime-500",
-    "bg-green-500",
-    "bg-emerald-500",
-    "bg-teal-500",
-    "bg-cyan-500",
-    "bg-sky-500",
-    "bg-blue-500",
-    "bg-indigo-500",
-    "bg-violet-500",
-    "bg-purple-500",
-    "bg-fuchsia-500",
-    "bg-pink-500",
-    "bg-rose-500",
-  ];
-
   return (
-    <div className="flex flex-col gap-4" onMouseUp={handleMouseUp}>
+    <div className="flex flex-col items-center gap-4" onMouseUp={handleMouseUp}>
       {/* Toolbar */}
-      <div className="flex gap-4 items-center p-4 bg-base-200 rounded-lg">
-        {/* Tool Selection */}
+      <div className="flex gap-4 items-center p-2 bg-base-200 rounded-lg">
+        {/* Actions */}
         <div className="join">
           <button
             type="button"
-            className={clsx("btn join-item", {
-              "btn-active": selectedTool === "pencil",
-            })}
-            onClick={() => setSelectedTool("pencil")}
-            title="Pencil"
+            className="btn btn-square join-item"
+            onClick={clearSprite}
+            title="Clear"
           >
-            <PencilIcon className="h-5 w-5" />
+            <BackspaceIcon className="h-5 w-5" />
           </button>
           <button
             type="button"
-            className={clsx("btn join-item", {
-              "btn-active": selectedTool === "eraser",
-            })}
-            onClick={() => setSelectedTool("eraser")}
-            title="Eraser"
+            className="btn btn-square join-item"
+            onClick={fillWithGradient}
+            title="Gradient"
           >
-            <TrashIcon className="h-5 w-5" />
+            <ChartBarIcon className="h-5 w-5 rotate-90" />
           </button>
           <button
             type="button"
-            className={clsx("btn join-item gap-2", {
+            className={clsx("btn btn-square join-item gap-2", {
               "btn-primary": sendStatus === "idle",
               "btn-success": sendStatus === "success",
               "btn-error": sendStatus === "error",
@@ -178,41 +168,93 @@ export function SpriteEditor({
             title="Send to Display"
           >
             {isSending ? (
-              <>
-                <span className="loading loading-spinner loading-sm" />
-                Sending...
-              </>
+              <span className="loading loading-spinner loading-sm" />
             ) : sendStatus === "success" ? (
-              <>✓ Sent!</>
+              <CheckIcon className="h-5 w-5" />
             ) : sendStatus === "error" ? (
-              <>✗ Failed</>
+              <XMarkIcon className="h-5 w-5" />
             ) : (
-              <>
-                <PaperAirplaneIcon className="h-5 w-5" />
-                Send
-              </>
+              <PaperAirplaneIcon className="h-5 w-5" />
             )}
           </button>
         </div>
 
         {/* Color Palette */}
         <div className="divider divider-horizontal" />
-        <div className="flex gap-1 flex-wrap max-w-md">
-          {colors.map((color) => (
+        <div className="flex gap-1 items-center">
+          <div className="flex gap-1 flex-wrap max-w-md">
+            {/* Empty/Erase color */}
             <button
               type="button"
-              key={color}
               className={clsx(
-                "w-8 h-8 rounded cursor-pointer border-2 hover:scale-110 transition-transform",
-                color,
-                selectedColor === color
+                "w-8 h-8 rounded cursor-pointer border-2 hover:scale-110 transition-transform bg-base-300",
+                "relative",
+                selectedColor === "bg-base-300"
                   ? "border-base-content"
                   : "border-base-300",
               )}
-              onClick={() => setSelectedColor(color)}
-              title={color}
-            />
-          ))}
+              onClick={() => setSelectedColor("bg-base-300")}
+              title="Empty (Erase)"
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-6 h-0.5 bg-base-content/30 rotate-45" />
+              </div>
+            </button>
+
+            {/* Color palette */}
+            {currentPalette.map((color) => (
+              <button
+                type="button"
+                key={color}
+                className={clsx(
+                  "w-8 h-8 rounded cursor-pointer border-2 hover:scale-110 transition-transform",
+                  color,
+                  selectedColor === color
+                    ? "border-base-content"
+                    : "border-base-300",
+                )}
+                onClick={() => setSelectedColor(color)}
+                title={color}
+              />
+            ))}
+          </div>
+
+          {/* Palette Selector Dropdown */}
+          <div className="dropdown dropdown-end">
+            <button
+              type="button"
+              tabIndex={0}
+              className="btn btn-square btn-sm"
+              title="Select Palette"
+            >
+              <ChevronDownIcon className="h-4 w-4" />
+            </button>
+            <ul
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: DaisyUI standard
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+            >
+              {(Object.keys(Palettes) as PaletteName[]).map((paletteName) => (
+                <li key={paletteName}>
+                  <button
+                    type="button"
+                    className={clsx({
+                      active: selectedPalette === paletteName,
+                    })}
+                    onClick={() => {
+                      setSelectedPalette(paletteName);
+                      // Close dropdown by removing focus
+                      if (document.activeElement instanceof HTMLElement) {
+                        document.activeElement.blur();
+                      }
+                    }}
+                  >
+                    {paletteName}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
