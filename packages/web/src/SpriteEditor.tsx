@@ -3,6 +3,7 @@ import {
   ChartBarIcon,
   CheckIcon,
   ChevronDownIcon,
+  CommandLineIcon,
   PaperAirplaneIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -10,6 +11,7 @@ import clsx from "clsx";
 import { useState, useEffect } from "react";
 
 import { Palettes, type PaletteName } from "./palettes";
+import { renderTextToBitmap } from "./bitmapFont";
 
 type Cell = {
   color: string;
@@ -36,6 +38,7 @@ export function SpriteEditor({
   const [sendStatus, setSendStatus] = useState<"idle" | "success" | "error">(
     "idle",
   );
+  const [textInput, setTextInput] = useState("");
 
   const currentPalette = Palettes[selectedPalette];
 
@@ -107,6 +110,23 @@ export function SpriteEditor({
     setGrid(newGrid);
   };
 
+  const renderText = () => {
+    if (!textInput.trim()) return;
+
+    try {
+      const textGrid = renderTextToBitmap(
+        textInput,
+        selectedColor,
+        "bg-base-300",
+        width,
+        height,
+      );
+      setGrid(textGrid);
+    } catch (error) {
+      console.error("Error rendering text:", error);
+    }
+  };
+
   const sendToDisplay = async () => {
     setIsSending(true);
     setSendStatus("idle");
@@ -137,7 +157,34 @@ export function SpriteEditor({
   return (
     <div className="flex flex-col items-center gap-4" onMouseUp={handleMouseUp}>
       {/* Toolbar */}
-      <div className="flex gap-4 items-center p-2 bg-base-200 rounded-lg">
+      <div className="flex gap-4 items-center p-2 bg-base-200 rounded-lg flex-wrap">
+        {/* Text Input */}
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="Type text..."
+            className="input input-sm input-bordered w-32"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                renderText();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="btn btn-square btn-sm"
+            onClick={renderText}
+            disabled={!textInput.trim()}
+            title="Render Text (3x4 font)"
+          >
+            <CommandLineIcon className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="divider divider-horizontal" />
+
         {/* Actions */}
         <div className="join">
           <button
